@@ -1,0 +1,33 @@
+#version identifier
+manifest_version: 1
+
+version:
+  name: V1
+  label: Version One
+  comment: The first version of the application
+
+#artifacts that are distributed from this version of the package
+artifacts:
+  setup_script: scripts/setup_script.sql
+  readme: README.md
+  default_streamlit: code_schema.lunch_planner_streamlit
+  extension_code: true
+
+#runtime configuration for this version
+configuration:
+  log_level: debug
+  trace_level: off
+
+#reference definition for binding and accessing cosumer data from app
+references:
+  - lunch_plan_table:
+      label: "Source Table"
+      description: "Table to be used in app"
+      privileges:
+        - SELECT
+        - INSERT
+        - UPDATE
+        - DELETE
+      object_type: Table
+      multi_valued: false
+      register_callback: code_schema.update_reference

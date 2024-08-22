@@ -1,0 +1,25 @@
+SET APP_DEV_ROLE = 'LUNCH_PLANNER_APP_DEVELOPER';
+SET APP_NAME = 'LUNCH_PLANNER_APP';
+SET SOURCE_DATABASE = 'LUNCH_PLANNER_DB';
+SET SOURCE_SCHEMA = CONCAT($SOURCE_DATABASE, '.TEST_SCHEMA');
+SET SOURCE_TABLE = CONCAT($SOURCE_SCHEMA, '.LUNCH_PLAN');
+
+USE ROLE ACCOUNTADMIN;
+USE SCHEMA IDENTIFIER($SOURCE_SCHEMA);
+
+GRANT USAGE ON DATABASE IDENTIFIER($SOURCE_DATABASE) TO APPLICATION IDENTIFIER($APP_NAME);
+GRANT USAGE ON SCHEMA IDENTIFIER($SOURCE_SCHEMA) TO APPLICATION IDENTIFIER($APP_NAME);
+
+USE ROLE IDENTIFIER($APP_DEV_ROLE);
+
+USE IDENTIFIER($APP_NAME);
+
+USE WAREHOUSE COMPUTE_WH;
+
+-- Initialize app procedure to allow some functions external access to external APIs
+CALL code_schema.init_app(PARSE_JSON('{
+        "external_access_integration_name": "edamam_external_access_integration",
+    }'));
+
+-- Bind your data to the app --> allows app to select from table
+CALL code_schema.update_reference('lunch_plan_table', 'ADD', SYSTEM$REFERENCE('table', $SOURCE_TABLE, 'PERSISTENT', 'SELECT', 'INSERT', 'UPDATE', 'DELETE'));
